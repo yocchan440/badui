@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAD UI 選手権 (The Worst User Experience)</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'MS PGothic', sans-serif;
+            background-color: #ffff00;
+            background-image: linear-gradient(45deg, #ffff00 25%, #ff00ff 25%, #ff00ff 50%, #ffff00 50%, #ffff00 75%, #ff00ff 75%, #ff00ff 100%);
+            background-size: 40px 40px;
+            color: #0000ff;
+            cursor: progress;
+            margin: 0;
+            padding-bottom: 50px;
+            overflow-x: hidden; /* Prevent scrollbar from trail */
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #00ffff;
+            border: 10px ridge #0000ff;
+            box-shadow: 15px 15px 0px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 10;
+        }
+        h1 {
+            text-align: center;
+            text-shadow: 3px 3px #ff0000;
+            background-color: #ffffff;
+            border: 3px solid black;
+        }
+        .blink {
+            animation: blinker 0.5s linear infinite;
+            color: red;
+            font-weight: bold;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+        .section {
+            margin-bottom: 40px;
+            border: 3px double #ff0000;
+            padding: 15px;
+            background-color: #ffffff;
+        }
+        label {
+            display: block;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background-color: #00ff00;
+            color: #000;
+            display: inline-block;
+            padding: 5px;
+            box-shadow: 3px 3px 0 #000;
+        }
+        input[type="range"] { width: 100%; }
+        .value-display {
+            font-size: 1.5em;
+            font-family: monospace;
+            background: #000;
+            color: #00ff00;
+            padding: 5px;
+            text-align: center;
+            margin-top: 5px;
+        }
+        button {
+            font-size: 1em;
+            padding: 5px 15px;
+            background: #c0c0c0;
+            color: black;
+            border: 3px outset #fff;
+            cursor: help;
+        }
+        button:active { border: 3px inset #fff; }
+        
+        /* Shuffling Keyboard Styles */
+        #keyboard-area {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 2px;
+            margin-top: 10px;
+        }
+        .key-btn {
+            padding: 5px;
+            font-size: 0.8em;
+            background: #ddd;
+            border: 1px solid #999;
+            cursor: pointer;
+        }
+
+        /* Terms Scroll Styles */
+        #terms-box {
+            width: 100%;
+            height: 100px;
+            overflow-y: scroll;
+            border: 2px inset #000;
+            background: #eee;
+        }
+        #terms-content {
+            font-size: 50px;
+            line-height: 1.2;
+            padding: 10px;
+        }
+        
+        /* Runaway Button */
+        #submit-container {
+            position: relative;
+            height: 150px;
+            background: repeating-linear-gradient(45deg, black, black 10px, yellow 10px, yellow 20px);
+            overflow: hidden;
+        }
+        #submit-btn {
+            position: absolute;
+            font-size: 2em;
+            font-weight: bold;
+            z-index: 100;
+            white-space: nowrap;
+        }
+
+        /* CSS Marquee Implementation */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .marquee-scroll-left {
+            display: inline-block;
+            animation: scroll-left 10s linear infinite;
+            padding-left: 100%;
+        }
+        @keyframes scroll-left {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+        .marquee-scroll-right {
+            display: inline-block;
+            animation: scroll-right 10s linear infinite;
+            padding-right: 100%;
+        }
+        @keyframes scroll-right {
+            0% { transform: translate(-100%, 0); }
+            100% { transform: translate(100%, 0); }
+        }
+        .marquee-alternate {
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            animation: bounce-text 1s ease-in-out infinite alternate;
+        }
+        @keyframes bounce-text {
+            from { transform: translateX(-50px); }
+            to { transform: translateX(50px); }
+        }
+
+        /* Mouse Trail Styles */
+        .trail-star {
+            position: absolute;
+            pointer-events: none;
+            font-size: 20px;
+            animation: spin 1s linear infinite;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            transition: top 0.1s linear, left 0.1s linear; /* Smooth catchup */
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Mouse Trail Container -->
+<div id="trail-container"></div>
+
+<!-- Top Warning Marquee -->
+<div class="marquee-container" style="background-color: #ff0000; color: yellow; font-weight: bold; font-size: 1.5em; border-bottom: 2px solid black;">
+    <div class="marquee-scroll-left">
+        🚨🚨🚨 緊急警告：このフォームは非常に使いにくいです！ 諦めない心が試されています！ 🚨🚨🚨
+    </div>
+</div>
+
+<div class="container">
+
+    <h1>🌟 究極のユーザー登録フォーム 🌟</h1>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <div class="blink">★☆★ 新規会員募集中！！ ★☆★</div>
+        
+        <!-- Welcome Marquees -->
+        <div class="marquee-container" style="background: #000; color: #0f0; margin: 5px 0;">
+            <div class="marquee-scroll-right">ようこそ！ welcome! 歓迎！</div>
+        </div>
+        <div class="marquee-container" style="background: #000; color: #0f0; margin: 5px 0;">
+            <div class="marquee-scroll-left">ようこそ！ welcome! 歓迎！</div>
+        </div>
+    </div>
+
+    <!-- 1. Phone Number Slider -->
+    <div class="section">
+        <label>📞 電話番号</label>
+        <p>スライダーを動かして電話番号を選択してください。</p>
+        <input type="range" id="phone-slider" min="0" max="99999999999" step="1" value="0">
+        <div class="value-display" id="phone-display">000-0000-0000</div>
+        <small>※矢印キーで微調整できます</small>
+    </div>
+
+    <!-- 2. Postal Code Lottery -->
+    <div class="section">
+        <label>📮 郵便番号</label>
+        <p>あなたの郵便番号が出るまで「再抽選」ボタンを押し続けてください。</p>
+        <div class="value-display" id="zip-display">123-4567</div>
+        <br>
+        <button onclick="rollZip()">🎲 再抽選</button>
+    </div>
+
+    <!-- 3. Disappearing Name Input -->
+    <div class="section">
+        <label>👤 お名前</label>
+        <p>セキュリティのため、入力が止まると0.5秒で消去されます。</p>
+        <input type="text" id="name-input" placeholder="急げ！！" style="font-size: 1.5em; width: 100%;">
+    </div>
+
+    <!-- 4. Address via Shuffling Keyboard -->
+    <div class="section">
+        <label>🏠 ご住所</label>
+        <p>セキュリティ強化のため、物理キーボードは使用できません。画面上のキーボードを使用してください。（クリックするたびに配置が変わります）</p>
+        <input type="text" id="address-input" readonly style="width: 100%; font-size: 1.2em; background: #ccc;">
+        <div id="keyboard-area"></div>
+        <button onclick="document.getElementById('address-input').value = ''" style="margin-top: 5px;">クリア</button>
+    </div>
+
+    <!-- 5. Password via Unicode Dropdown -->
+    <div class="section">
+        <label>🔑 パスワード</label>
+        <p>1文字ずつ選択して設定してください。</p>
+        <div id="password-container">
+            <!-- Starting with 4 slots -->
+            <select class="pwd-char"></select>
+            <select class="pwd-char"></select>
+            <select class="pwd-char"></select>
+            <select class="pwd-char"></select>
+        </div>
+        <button onclick="addPasswordSlot()">文字を追加</button>
+        <p>現在のパスワード: <span id="pwd-preview" style="filter: blur(5px);">****</span> (マウスホバーで確認不可)</p>
+    </div>
+
+    <!-- 6. Unsorted Date Picker -->
+    <div class="section">
+        <label>🎂 生年月日</label>
+        <p>リストから探してください（並び順はランダムです）。</p>
+        <select id="year-select"></select> 年
+        <select id="month-select"></select> 月
+        <select id="day-select"></select> 日
+    </div>
+
+    <!-- 7. Terms of Service -->
+    <div class="section">
+        <label>📜 利用規約</label>
+        <p>最後までスクロールして同意してください。</p>
+        <div id="terms-box" onscroll="checkScroll()">
+            <div id="terms-content">
+                第1条<br>我慢すること。<br><br>
+                第2条<br>怒らないこと。<br><br>
+                第3条<br>マウスを投げないこと。<br><br>
+                第4条<br>深呼吸すること。<br><br>
+                第5条<br>スライダーはずれない。<br><br>
+                第6条<br>キーボードは逃げる。<br><br>
+                第7条<br>諦めたらそこで試合終了。<br><br>
+                第8条<br>UIは友達。<br><br>
+                第9条<br>CSSは爆発だ。<br><br>
+                第10条<br>同意しましたか？<br><br>
+                まだです。<br><br>
+                もっと下です。<br><br>
+                まだまだ。<br><br>
+                FINISH.
+            </div>
+        </div>
+        <br>
+        <input type="checkbox" id="agree-check" disabled> <span id="agree-text" style="color: gray;">規約を最後まで読んでください</span>
+    </div>
+
+    <!-- 8. Runaway Submit Button -->
+    <div class="section" id="submit-container">
+        <div class="marquee-container" style="position: absolute; top: 0; left: 0;">
+            <div class="marquee-alternate" style="color: white; font-weight: bold; font-size: 1.2em;">
+                ↓↓↓ 送信ボタンはこちら ↓↓↓
+            </div>
+        </div>
+        <button id="submit-btn" onmouseover="moveButton()">送信する</button>
+    </div>
+
+</div>
+
+<script>
+    // 1. Phone Number Logic
+    const phoneSlider = document.getElementById('phone-slider');
+    const phoneDisplay = document.getElementById('phone-display');
+    phoneSlider.addEventListener('input', function() {
+        let val = this.value.toString().padStart(11, '0');
+        let formatted = val.substring(0, 3) + '-' + val.substring(3, 7) + '-' + val.substring(7, 11);
+        phoneDisplay.textContent = formatted;
+    });
+
+    // 2. Postal Code Logic
+    function rollZip() {
+        const part1 = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        const part2 = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        document.getElementById('zip-display').textContent = part1 + '-' + part2;
+    }
+
+    // 3. Disappearing Name Logic
+    const nameInput = document.getElementById('name-input');
+    let nameTimer;
+    nameInput.addEventListener('input', function() {
+        clearTimeout(nameTimer);
+        nameTimer = setTimeout(() => {
+            this.value = '';
+            this.placeholder = '消去されました...';
+        }, 500);
+    });
+
+    // 4. Shuffling Keyboard Logic
+    const chars = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんー０１２３４５６７８９";
+    const addressInput = document.getElementById('address-input');
+    const keyboardArea = document.getElementById('keyboard-area');
+
+    function renderKeyboard() {
+        keyboardArea.innerHTML = '';
+        const charArray = chars.split('');
+        shuffleArray(charArray);
+        charArray.forEach(char => {
+            const btn = document.createElement('button');
+            btn.className = 'key-btn';
+            btn.textContent = char;
+            btn.onclick = () => {
+                addressInput.value += char;
+                renderKeyboard(); // Shuffle after every click
+            };
+            keyboardArea.appendChild(btn);
+        });
+    }
+    renderKeyboard();
+
+    // 5. Password Dropdown Logic
+    function addPasswordSlot() {
+        const select = document.createElement('select');
+        select.className = 'pwd-char';
+        populatePasswordSelect(select);
+        document.getElementById('password-container').appendChild(select);
+    }
+
+    function populatePasswordSelect(select) {
+        // Add a mix of chars, emojis, and symbols
+        const pool = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?/\\";
+        const poolArray = pool.split('');
+        shuffleArray(poolArray);
+        poolArray.forEach(char => {
+            const opt = document.createElement('option');
+            opt.value = char;
+            opt.textContent = char;
+            select.appendChild(opt);
+        });
+    }
+    
+    // Initialize first few slots
+    document.querySelectorAll('.pwd-char').forEach(populatePasswordSelect);
+
+
+    // 6. Random Date Logic
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function populateSelect(id, start, end) {
+        const select = document.getElementById(id);
+        let options = [];
+        for (let i = start; i <= end; i++) {
+            options.push(i);
+        }
+        shuffleArray(options);
+        options.forEach(val => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.textContent = val;
+            select.appendChild(opt);
+        });
+    }
+    populateSelect('year-select', 1900, 2025);
+    populateSelect('month-select', 1, 12);
+    populateSelect('day-select', 1, 31);
+
+    // 7. Terms Scroll Logic
+    const termsBox = document.getElementById('terms-box');
+    const agreeCheck = document.getElementById('agree-check');
+    const agreeText = document.getElementById('agree-text');
+    
+    function checkScroll() {
+        // Allow a small margin of error
+        if (termsBox.scrollHeight - termsBox.scrollTop <= termsBox.clientHeight + 50) {
+            agreeCheck.disabled = false;
+            agreeText.style.color = "black";
+            agreeText.textContent = "同意して進む（押せるとは言っていない）";
+        }
+    }
+
+    // 8. Runaway Submit Button
+    const submitBtn = document.getElementById('submit-btn');
+    const submitContainer = document.getElementById('submit-container');
+    
+    function moveButton() {
+        const containerRect = submitContainer.getBoundingClientRect();
+        const btnRect = submitBtn.getBoundingClientRect();
+        const maxX = containerRect.width - btnRect.width;
+        const maxY = containerRect.height - btnRect.height;
+        const newX = Math.random() * maxX;
+        const newY = Math.random() * maxY;
+        submitBtn.style.left = newX + 'px';
+        submitBtn.style.top = newY + 'px';
+    }
+
+    // --- Mouse Trail Logic (Fixed) ---
+    const trailContainer = document.getElementById('trail-container');
+    const trailLength = 15;
+    const stars = [];
+    let mouseX = 0;
+    let mouseY = 0;
+    const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'];
+
+    // Create star elements
+    for (let i = 0; i < trailLength; i++) {
+        const star = document.createElement('div');
+        star.className = 'trail-star';
+        star.textContent = '★';
+        star.style.color = colors[i % colors.length];
+        // Initial position off-screen
+        star.x = -100;
+        star.y = -100;
+        trailContainer.appendChild(star);
+        stars.push(star);
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.pageX;
+        mouseY = e.pageY;
+    });
+
+    function animateTrail() {
+        // Position of the "leader" (the mouse)
+        let targetX = mouseX;
+        let targetY = mouseY;
+
+        stars.forEach((star, index) => {
+            // Move star towards target
+            // Use CSS transition for smoothing, but update position via JS for the chain effect
+            
+            // Simple interpolation
+            star.x += (targetX - star.x) * 0.3;
+            star.y += (targetY - star.y) * 0.3;
+
+            star.style.left = (star.x + 10) + 'px'; // Offset slightly so it doesn't block click immediately
+            star.style.top = (star.y + 10) + 'px';
+
+            // The current star becomes the target for the NEXT star
+            targetX = star.x;
+            targetY = star.y;
+        });
+
+        requestAnimationFrame(animateTrail);
+    }
+    animateTrail();
+
+</script>
+
+</body>
+</html>

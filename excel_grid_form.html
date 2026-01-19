@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新規登録申請書.xlsx - BadUI</title>
+    <style>
+        body {
+            background-color: #e6e6e6;
+            font-family: "MS PGothic", "ＭＳ Ｐゴシック", sans-serif; /* Excel font vibe */
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .excel-sheet {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            padding: 40px;
+            overflow-x: auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-decoration: underline;
+            letter-spacing: 5px;
+        }
+        .description {
+            font-size: 12px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        /* The Grid */
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 0 auto;
+            table-layout: fixed; /* Strict cell sizing */
+            width: 705px; /* (26 cols * 25px) + 30px (row header) + border */
+            border-top: 1px solid #d4d4d4;
+            border-left: 1px solid #d4d4d4;
+        }
+        td, th {
+            border-right: 1px solid #d4d4d4;
+            border-bottom: 1px solid #d4d4d4;
+            width: 25px;
+            height: 25px;
+            padding: 0;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 14px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        .row-header {
+            width: 30px; /* Specific width for row labels */
+        }
+        
+        /* Header cells styling */
+        .label-cell {
+            background-color: #d9ead3;
+            font-weight: bold;
+            border: 1px solid #000 !important;
+        }
+        
+        /* Input cells styling */
+        .input-cell {
+            border: 1px solid #000 !important;
+            background-color: #fff;
+            position: relative;
+            z-index: 1; /* Ensure borders are visible */
+        }
+        
+        /* Ensure labels and inputs have all borders visible */
+        .col-header, .row-header {
+            background-color: #f3f3f3;
+            border-right: 1px solid #999;
+            border-bottom: 1px solid #999;
+            color: #333;
+            font-size: 11px;
+        }
+
+        /* The input element itself */
+        input[type="text"] {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            text-align: center;
+            font-family: inherit;
+            font-size: inherit;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="excel-sheet">
+    <h1>新規会員登録申請書</h1>
+    <p class="description">※太枠の中に、1マス1文字で正確に記入すること。</p>
+
+    <form id="god-excel-form">
+        <table>
+            <!-- Excel Column Headers -->
+            <tr>
+                <td class="row-header"></td>
+                <td class="col-header">A</td>
+                <td class="col-header">B</td>
+                <td class="col-header">C</td>
+                <td class="col-header">D</td>
+                <td class="col-header">E</td>
+                <td class="col-header">F</td>
+                <td class="col-header">G</td>
+                <td class="col-header">H</td>
+                <td class="col-header">I</td>
+                <td class="col-header">J</td>
+                <td class="col-header">K</td>
+                <td class="col-header">L</td>
+                <td class="col-header">M</td>
+                <td class="col-header">N</td>
+                <td class="col-header">O</td>
+                <td class="col-header">P</td>
+                <td class="col-header">Q</td>
+                <td class="col-header">R</td>
+                <td class="col-header">S</td>
+                <td class="col-header">T</td>
+                <td class="col-header">U</td>
+                <td class="col-header">V</td>
+                <td class="col-header">W</td>
+                <td class="col-header">X</td>
+                <td class="col-header">Y</td>
+                <td class="col-header">Z</td>
+            </tr>
+
+            <!-- Spacer Row 1 -->
+            <tr>
+                <td class="row-header">1</td>
+                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            </tr>
+
+            <!-- Email Label Row -->
+            <tr>
+                <td class="row-header">2</td>
+                <td></td>
+                <td colspan="4" class="label-cell">E-Mail</td>
+                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            </tr>
+
+            <!-- Email Input Row -->
+            <tr id="email-row">
+                <td class="row-header">3</td>
+                <td></td>
+                <!-- 25 input cells for Email -->
+                <td class="input-cell"><input type="text" maxlength="1" name="email_0"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_1"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_2"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_3"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_4"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_5"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_6"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_7"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_8"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_9"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_10"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_11"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_12"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_13"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_14"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_15"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_16"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_17"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_18"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_19"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_20"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_21"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_22"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_23"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="email_24"></td>
+            </tr>
+
+            <!-- Spacer Row 4 -->
+            <tr>
+                <td class="row-header">4</td>
+                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            </tr>
+
+            <!-- Phone Label Row -->
+            <tr>
+                <td class="row-header">5</td>
+                <td></td>
+                <td colspan="4" class="label-cell">TEL</td>
+                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            </tr>
+
+            <!-- Phone Input Row -->
+            <tr id="phone-row">
+                <td class="row-header">6</td>
+                <td></td>
+                <!-- 15 input cells for Phone -->
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_0"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_1"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_2"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_3"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_4"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_5"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_6"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_7"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_8"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_9"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_10"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_11"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_12"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_13"></td>
+                <td class="input-cell"><input type="text" maxlength="1" name="tel_14"></td>
+                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            </tr>
+            
+             <!-- Spacer Row 7 -->
+             <tr>
+                <td class="row-header">7</td>
+                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            </tr>
+
+        </table>
+
+        <div class="submit-area">
+            <button type="submit">申請する</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('god-excel-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        let email = '';
+        document.querySelectorAll('tr#email-row input').forEach(input => {
+            email += input.value;
+        });
+
+        let tel = '';
+        document.querySelectorAll('tr#phone-row input').forEach(input => {
+            tel += input.value;
+        });
+
+        if (!email || !tel) {
+            alert('未入力の項目があります。すべてのセルを確認してください。');
+            return;
+        }
+
+        alert(`以下の内容で申請を受け付けました（嘘）。\n\nメール: ${email}\n電話番号: ${tel}`);
+    });
+
+    // Optional: Extremely frustrating behavior where backspace doesn't go back,
+    // and pasting is impossible because maxlength=1.
+    // I will leave it "purely structural" as requested, but disable pasting to be evil.
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            alert('セキュリティのため、貼り付けは禁止されています。1文字ずつ入力してください。');
+        });
+    });
+</script>
+
+</body>
+</html>

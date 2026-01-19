@@ -1,0 +1,180 @@
+<!-- 1 4 7 10 -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>利用規約への同意 - BadUI</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 12px;
+        }
+        .terms-box {
+            height: 150px;
+            overflow-y: scroll;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .checkbox-container {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .form-check {
+            padding: 10px 10px 10px 35px; /* Adjust padding for visual comfort */
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        .form-check:last-child {
+            border-bottom: none;
+        }
+        .form-check:hover {
+            background-color: #f8f9fa;
+        }
+        .form-check-input {
+            cursor: pointer;
+        }
+        .form-check-label {
+            cursor: pointer;
+            width: 100%;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card p-4">
+    <h1 class="h4 mb-3 text-center">利用規約</h1>
+    
+    <div class="terms-box">
+        <p><strong>第1条（適用）</strong><br>本規約は、ユーザーと当社との間の本サービスの利用に関わる一切の関係に適用されるものとします。</p>
+        <p><strong>第2条（禁止事項）</strong><br>ユーザーは、本サービスの利用にあたり、法令または公序良俗に違反する行為をしてはなりません。</p>
+        <p><strong>第3条（免責事項）</strong><br>当社の債務不履行責任は、当社の故意または重過失によらない場合には免責されるものとします。</p>
+        <p><strong>第4条（情報の取扱い）</strong><br>当社は、ユーザーの個人情報を当社のプライバシーポリシーに従って適切に取り扱うものとします。</p>
+        <p><strong>第5条（サービスの変更）</strong><br>当社は、ユーザーに通知することなく、本サービスの内容を変更しまたは本サービスの提供を中止することができるものとします。</p>
+        <p><strong>第6条（利用制限）</strong><br>当社は、ユーザーが本規約に違反した場合、事前の通知なく利用を制限できるものとします。</p>
+        <p><strong>第7条（知的財産権）</strong><br>本サービスに関する著作権等の知的財産権は、すべて当社または権利者に帰属します。</p>
+        <p><strong>第8条（準拠法）</strong><br>本規約の解釈にあたっては、日本法を準拠法とするものとします。</p>
+        <p><strong>第9条（裁判管轄）</strong><br>本サービスに関して紛争が生じた場合には、当社の本店所在地を管轄する裁判所を専属的合意管轄とします。</p>
+        <p><strong>第10条（規約の変更）</strong><br>当社は、必要と判断した場合には、ユーザーに通知することなくいつでも本規約を変更することができるものとします。</p>
+    </div>
+
+    <p class="text-secondary small mb-3">利用規約に同意するために、以下の全ての項目にチェックを入れてください。</p>
+
+    <div id="checkbox-list" class="checkbox-container mb-4">
+        <!-- Checkboxes will be generated here -->
+    </div>
+
+    <button id="submit-btn" class="btn btn-primary w-100 py-2 fw-bold" disabled>
+        全ての規約に同意して次へ
+    </button>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const checkboxCount = 10;
+        const container = document.getElementById('checkbox-list');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // State management: false = unchecked, true = checked
+        let state = new Array(checkboxCount).fill(false);
+
+        function render() {
+            container.innerHTML = '';
+            
+            state.forEach((isChecked, index) => {
+                const div = document.createElement('div');
+                div.className = 'form-check';
+                
+                const input = document.createElement('input');
+                input.className = 'form-check-input';
+                input.type = 'checkbox';
+                input.id = `term-${index}`;
+                input.checked = isChecked;
+                
+                // Add change listener
+                input.addEventListener('change', (e) => {
+                    // Prevent default immediate visual change if we want strict control,
+                    // but usually letting it toggle and then re-rendering is fine.
+                    // We update the state logic based on the "Lights Out" rule.
+                    handleToggle(index);
+                });
+
+                const label = document.createElement('label');
+                label.className = 'form-check-label';
+                label.htmlFor = `term-${index}`;
+                label.textContent = `利用規約 第${index + 1}条に同意する`;
+
+                div.appendChild(input);
+                div.appendChild(label);
+                container.appendChild(div);
+            });
+
+            validate();
+        }
+
+        function handleToggle(index) {
+            // Toggle self
+            state[index] = !state[index];
+            
+            // Toggle previous
+            if (index > 0) {
+                state[index - 1] = !state[index - 1];
+            }
+            
+            // Toggle next
+            if (index < checkboxCount - 1) {
+                state[index + 1] = !state[index + 1];
+            }
+
+            render();
+            
+            // Restore focus to the clicked element to maintain keyboard accessibility/usability
+            const focusedElement = document.getElementById(`term-${index}`);
+            if (focusedElement) {
+                focusedElement.focus();
+            }
+        }
+
+        function validate() {
+            const allChecked = state.every(s => s === true);
+            submitBtn.disabled = !allChecked;
+            
+            if (allChecked) {
+                submitBtn.classList.remove('btn-secondary');
+                submitBtn.classList.add('btn-primary');
+            } else {
+                // Keep it primary but disabled usually, or switch styles if desired
+            }
+        }
+
+        submitBtn.addEventListener('click', () => {
+            alert('同意ありがとうございます！次の画面へ進みます（未実装）。');
+        });
+
+        // Initial render
+        render();
+    });
+</script>
+
+</body>
+</html>

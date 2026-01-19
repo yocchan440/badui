@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電話番号登録 - BadUI</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden; /* Prevent body scroll from precision mode */
+        }
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+        .phone-display {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #333;
+            margin: 30px 0;
+            font-family: 'Courier New', Courier, monospace;
+            letter-spacing: 2px;
+            min-height: 4.5rem;
+            word-break: break-all;
+            line-height: 1.2;
+        }
+        .slider-container {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        /* Hide scrollbar for cleaner look implicitly, or keep it for precision mode usability?
+           Let's keep it visible so they know they can scroll. */
+
+        .slider-wrapper {
+            width: 100%; /* Default width */
+            padding: 20px;
+            transition: width 0.3s ease;
+        }
+
+        /* Precision Mode: Make it absurdly wide */
+        .slider-wrapper.precision-active {
+            width: 50000px; /* 50,000 pixels wide */
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .btn-submit {
+            background-color: #0d6efd;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+        }
+
+        .message-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .message-success {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        .message-error {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-card">
+    <h2 class="mb-3">電話番号確認</h2>
+    <p class="text-muted mb-4">セキュリティのため、スライダーを使ってご自身の電話番号を選択してください。</p>
+
+    <!-- The Number Display -->
+    <div id="phone-display" class="phone-display">000-0000-0000</div>
+
+    <!-- The Slider Area -->
+    <div class="slider-container" id="slider-container">
+        <div class="slider-wrapper" id="slider-wrapper">
+            <!-- Max value covers typical mobile numbers e.g. 090... -> 9,000,000,000 approx range needed.
+                 Actually phone numbers are 11 digits, so max is 99,999,999,999 (100 billion).
+                 Standard range input might struggle with precision, which is the point. -->
+            <input type="range" id="phone-slider" min="0" max="99999999999" value="0" step="1">
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="form-check form-switch text-start">
+            <input class="form-check-input" type="checkbox" id="precision-toggle">
+            <label class="form-check-label" for="precision-toggle">精密モード (高精度調整)</label>
+        </div>
+        <span class="text-muted small">現在の値: <span id="raw-value">0</span></span>
+    </div>
+
+    <button id="submit-btn" class="btn btn-primary btn-submit w-100">
+        <span id="spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status"></span>
+        SMSを送信
+    </button>
+
+    <div id="message-area" class="message-box"></div>
+</div>
+
+<script>
+    const slider = document.getElementById('phone-slider');
+    const display = document.getElementById('phone-display');
+    const toggle = document.getElementById('precision-toggle');
+    const wrapper = document.getElementById('slider-wrapper');
+    const rawValue = document.getElementById('raw-value');
+    const submitBtn = document.getElementById('submit-btn');
+    const spinner = document.getElementById('spinner');
+    const msgArea = document.getElementById('message-area');
+    const container = document.getElementById('slider-container');
+
+    // Format number as 000-0000-0000 or 00-0000-0000
+    function formatPhoneNumber(val) {
+        // Pad with leading zeros to ensure 11 digits max
+        let s = val.toString().padStart(11, '0');
+
+        // Simple heuristic formatting
+        // If starts with 0-9 (mobile often 090/080/070), 3-4-4
+        // Landlines can vary, but let's stick to a generic 3-4-4 for visuals
+        // or just first 3, middle 4, last 4.
+
+        return `${s.substring(0, 3)}-${s.substring(3, 7)}-${s.substring(7, 11)}`;
+    }
+
+    function updateDisplay() {
+        const val = slider.value;
+        display.textContent = formatPhoneNumber(val);
+        rawValue.textContent = val;
+    }
+
+    slider.addEventListener('input', updateDisplay);
+
+    toggle.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            wrapper.classList.add('precision-active');
+            // Try to center the scroll around the current thumb position roughly
+            // This is annoying because it jumps
+            const ratio = slider.value / slider.max;
+            setTimeout(() => {
+                container.scrollLeft = (50000 * ratio) - (container.clientWidth / 2);
+            }, 50);
+        } else {
+            wrapper.classList.remove('precision-active');
+        }
+    });
+
+    submitBtn.addEventListener('click', () => {
+        // UI Feedback
+        submitBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        msgArea.style.display = 'none';
+
+        setTimeout(() => {
+            submitBtn.disabled = false;
+            spinner.classList.add('d-none');
+
+            const currentNum = display.textContent;
+
+            // Randomly succeed or fail in a funny way
+            // "Close but not quite"
+
+            // Generate a random number slightly different from current
+            const val = BigInt(slider.value);
+            const offset = Math.floor(Math.random() * 10) - 5; // -5 to +4
+            let diffVal = val + BigInt(offset);
+            if (offset === 0) diffVal = val + 1n; // Ensure difference
+
+            const diffNum = formatPhoneNumber(diffVal);
+
+            msgArea.style.display = 'block';
+            msgArea.className = 'message-box message-error';
+            msgArea.innerHTML = `
+                <strong>送信失敗</strong><br>
+                指定された番号 (${currentNum}) は現在使われておりません。<br>
+                もしかして: <strong>${diffNum}</strong> ですか？
+            `;
+
+        }, 2000);
+    });
+
+    // Initial call
+    updateDisplay();
+</script>
+
+</body>
+</html>

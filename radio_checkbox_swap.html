@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アンケート - BadUI</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 40px 0;
+        }
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .question-box {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+        .question-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            border-left: 4px solid #0d6efd;
+            padding-left: 10px;
+        }
+        .note {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        /* Custom styling to ensure inputs look exactly as requested regardless of OS defaults */
+        .form-check-input {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="h3 mb-4 text-center">ユーザー意識調査</h1>
+    <p class="mb-4 text-muted text-center">ご協力ありがとうございます。以下の質問にお答えください。</p>
+
+    <form id="bad-form">
+        <!-- Q1: Multiple Select implemented with Radio Buttons -->
+        <div class="question-box">
+            <div class="question-title">Q1. 興味のある技術分野をすべて選んでください（複数回答可）</div>
+            <p class="note">※ラジオボタンですが、複数選択可能です。</p>
+            
+            <div class="form-check">
+                <input class="form-check-input multi-radio" type="radio" name="q1_1" id="q1_ai">
+                <label class="form-check-label" for="q1_ai">人工知能 (AI)</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input multi-radio" type="radio" name="q1_2" id="q1_web">
+                <label class="form-check-label" for="q1_web">Web開発</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input multi-radio" type="radio" name="q1_3" id="q1_mobile">
+                <label class="form-check-label" for="q1_mobile">モバイルアプリ</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input multi-radio" type="radio" name="q1_4" id="q1_cloud">
+                <label class="form-check-label" for="q1_cloud">クラウドインフラ</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input multi-radio" type="radio" name="q1_5" id="q1_iot">
+                <label class="form-check-label" for="q1_iot">IoT</label>
+            </div>
+        </div>
+
+        <!-- Q2: Single Select implemented with Checkboxes -->
+        <div class="question-box">
+            <div class="question-title">Q2. 最もよく利用するデバイスを1つだけ選んでください</div>
+            <p class="note">※チェックボックスですが、1つしか選べません。</p>
+
+            <div class="form-check">
+                <input class="form-check-input single-checkbox" type="checkbox" name="q2" id="q2_pc" value="pc">
+                <label class="form-check-label" for="q2_pc">デスクトップPC</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input single-checkbox" type="checkbox" name="q2" id="q2_laptop" value="laptop">
+                <label class="form-check-label" for="q2_laptop">ノートPC</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input single-checkbox" type="checkbox" name="q2" id="q2_tablet" value="tablet">
+                <label class="form-check-label" for="q2_tablet">タブレット</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input single-checkbox" type="checkbox" name="q2" id="q2_phone" value="phone">
+                <label class="form-check-label" for="q2_phone">スマートフォン</label>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2">回答を送信</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        /* 
+           Logic for Q1: Radio buttons acting like Checkboxes 
+           - Allow multiple selection (by using different names or handling clicks).
+           - Allow toggling off (standard radios cannot be toggled off by click).
+        */
+        const multiRadios = document.querySelectorAll('.multi-radio');
+        
+        multiRadios.forEach(radio => {
+            // Store the previous state to handle the toggle logic
+            let previousState = false;
+
+            // 'mousedown' fires before 'click' and before the value changes
+            radio.addEventListener('mousedown', () => {
+                previousState = radio.checked;
+            });
+
+            radio.addEventListener('click', (e) => {
+                // If it was already checked, the user wants to uncheck it.
+                // Standard radio behavior keeps it checked. We must manually uncheck.
+                if (previousState) {
+                    radio.checked = false;
+                    previousState = false;
+                } else {
+                    // It was unchecked, so now it becomes checked (standard behavior is fine here)
+                    previousState = true;
+                }
+            });
+        });
+
+
+        /* 
+           Logic for Q2: Checkboxes acting like Radio buttons 
+           - Only one can be checked at a time.
+           - Clicking a checked one should NOT uncheck it (enforce selection).
+        */
+        const singleCheckboxes = document.querySelectorAll('.single-checkbox');
+
+        singleCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Uncheck all others
+                    singleCheckboxes.forEach(other => {
+                        if (other !== this) {
+                            other.checked = false;
+                        }
+                    });
+                } else {
+                    // If the user tries to uncheck the current selection, force it back to true
+                    // (mimicking radio button behavior where you can't have "no selection" once selected)
+                    this.checked = true;
+                }
+            });
+        });
+
+        // Form submission demo
+        document.getElementById('bad-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Collect Q1 answers
+            const q1Answers = [];
+            document.querySelectorAll('.multi-radio:checked').forEach(r => {
+                q1Answers.push(r.nextElementSibling.textContent);
+            });
+
+            // Collect Q2 answer
+            const q2Answer = document.querySelector('.single-checkbox:checked');
+            const q2Text = q2Answer ? q2Answer.nextElementSibling.textContent : '未選択';
+
+            alert(`回答ありがとうございます。\n\nQ1: ${q1Answers.join(', ') || 'なし'}\nQ2: ${q2Text}`);
+        });
+    });
+</script>
+
+</body>
+</html>

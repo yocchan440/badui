@@ -2,73 +2,39 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Manual Entry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            background-color: #ffffff;
-            color: #000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            font-family: sans-serif;
-        }
-
-        .container {
-            text-align: center;
-        }
-
-        /* QRコードのグリッド: 21x21 */
+        /* Tailwindで表現しきれないグリッド設定 */
         #qr-grid {
             display: grid;
-            grid-template-columns: repeat(21, 20px);
-            grid-template-rows: repeat(21, 20px);
-            border: 20px solid #fff;
-            outline: 1px solid #000;
-            background-color: #fff;
-        }
-
-        .cell {
-            width: 20px;
-            height: 20px;
-            box-sizing: border-box;
-            border: 1px solid #eee; /* 補助線 */
-            background-color: white;
-        }
-
-        /* 黒セル */
-        .cell.black { background-color: black; }
-
-        /* 固定領域（編集不可・補助線なし） */
-        .cell.fixed {
-            cursor: default;
-            border: none;
-        }
-
-        .controls {
-            margin-top: 40px;
-        }
-
-        button {
-            padding: 10px 20px;
-            cursor: pointer;
-        }
-
-        p {
-            font-size: 14px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(21, 1fr);
+            /* QRコードのアスペクト比を維持 */
+            aspect-ratio: 1 / 1;
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800 flex flex-col items-center justify-center min-h-screen p-4 font-sans">
 
-    <div class="container">
-        <h2>ログイン情報の入力</h2>
-        <p>ログイン用QRコードのドットを、以下のグリッドに正しく入力してください。</p>
+    <div class="w-full max-w-[420px] text-center">
+        <h2 class="text-2xl font-bold text-gray-900 mb-3">QRコードでかんたんログイン！</h2>
+        <p class="text-sm text-gray-600 mb-6">
+            ログイン用QRコードのドットを、以下のグリッドに正しく入力してください。
+        </p>
         
-        <div id="qr-grid"></div>
+        <!-- グリッドコンテナ -->
+        <div class="bg-white p-6 sm:p-10 shadow-lg rounded-lg border border-gray-200">
+            <div id="qr-grid" class="w-full bg-white border border-gray-300">
+                <!-- JSでセルを生成 -->
+            </div>
+        </div>
+
+        <div class="mt-8 space-y-3">
+            <button onclick="resetGrid()" class="w-full bg-white hover:bg-gray-100 text-gray-700 font-medium py-3 px-4 rounded border border-gray-300 transition duration-200 shadow-sm">
+                リセット
+            </button>
+        </div>
     </div>
 
     <script>
@@ -99,21 +65,49 @@
             return 'white';
         }
 
-        // グリッドの生成
-        for (let r = 0; r < size; r++) {
-            for (let c = 0; c < size; c++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                
-                if (isFixed(r, c)) {
-                    cell.classList.add('fixed');
-                    if (getFixedColor(r, c) === 'black') cell.classList.add('black');
-                } else {
-                    cell.onclick = () => cell.classList.toggle('black');
+        function createGrid() {
+            grid.innerHTML = '';
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const cell = document.createElement('div');
+                    
+                    // セルの基本スタイル
+                    // ガイド線として極薄いボーダーをつけるが、QRらしさを邪魔しないようにする
+                    cell.className = 'w-full h-full border-[0.5px] border-gray-100 box-border';
+
+                    if (isFixed(r, c)) {
+                        // 固定エリア
+                        if (getFixedColor(r, c) === 'black') {
+                            cell.classList.add('bg-black');
+                        } else {
+                            cell.classList.add('bg-white');
+                        }
+                    } else {
+                        // 入力可能エリア
+                        cell.classList.add('bg-white', 'cursor-pointer', 'hover:bg-gray-100');
+                        
+                        // クリックイベント
+                        cell.onclick = function() {
+                            if (this.classList.contains('bg-black')) {
+                                this.classList.remove('bg-black');
+                                this.classList.add('bg-white');
+                            } else {
+                                this.classList.remove('bg-white');
+                                this.classList.add('bg-black');
+                            }
+                        };
+                    }
+                    grid.appendChild(cell);
                 }
-                grid.appendChild(cell);
             }
         }
+
+        function resetGrid() {
+            createGrid();
+        }
+
+        // 初期化
+        createGrid();
     </script>
 </body>
 </html>

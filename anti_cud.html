@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>バッドUI：明度と色覚の罠</title>
+    <style>
+        :root { --sim: none; }
+        body { 
+            filter: var(--sim); 
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            text-align: center; 
+            margin: 0; 
+            padding: 0; 
+            background: #f5f5f5; 
+            transition: filter 0.3s;
+        }
+
+        /* シミュレーター操作パネル */
+        .nav { 
+            background: #222; 
+            padding: 15px; 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            position: sticky; 
+            top: 0;
+            z-index: 100;
+        }
+        .nav button { 
+            padding: 10px 20px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: bold;
+            background: #444;
+            color: #ccc;
+        }
+        .nav button.active { background: #007bff; color: white; transform: scale(1.05); }
+
+        /* メインコンテンツ */
+        .container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 80vh; 
+            padding: 20px;
+        }
+        .card { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
+            max-width: 450px; 
+            width: 100%;
+        }
+        
+        h2 { color: #333; margin-top: 0; }
+
+        /* 誘導の鍵：指示文 */
+        .instruction-box {
+            background: #fff9c4;
+            border: 2px solid #fbc02d;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: left;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .hint-text { font-weight: bold; }
+        .green-label { color: #2e7d32; }
+        .red-label { color: #c62828; }
+
+        /* ボタンの罠 */
+        .btn-group { display: flex; justify-content: space-around; gap: 20px; margin-top: 30px; }
+        .btn-circle { 
+            width: 140px; 
+            height: 140px; 
+            border: none; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            font-size: 1.2rem; 
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .btn-circle:active { transform: scale(0.95); }
+
+        /* 
+           ボタンA: 明るいピンク。
+           C型には「赤」に見える。P/D型には「非常に明るい（白に近い黄色）」に見える。
+        */
+        .btn-red-bright { 
+            background-color: #ffcdd2; 
+            color: #b71c1c; 
+        }
+
+        /* 
+           ボタンB: 暗い緑。
+           C型には「緑」に見える。P/D型には「非常に暗い（黒に近い茶色）」に見える。
+        */
+        .btn-green-dark { 
+            background-color: #1b5e20; 
+            color: #c8e6c9; 
+        }
+
+        .footer { margin-top: 40px; font-size: 0.8rem; color: #888; }
+    </style>
+</head>
+<body>
+
+    <div class="nav">
+        <button id="btn-c" onclick="setSim('none', 'btn-c')" class="active">C型 (一般色覚)</button>
+        <button id="btn-p" onclick="setSim('url(#protanopia)', 'btn-p')">P型 (1型2色覚)</button>
+        <button id="btn-d" onclick="setSim('url(#deuteranopia)', 'btn-d')">D型 (2型2色覚)</button>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>ファイルの最終確認</h2>
+            <p>これまでの編集内容を保存しますか？</p>
+            
+            <div class="instruction-box">
+                <span class="hint-text">操作ガイド：</span><br>
+                ・<span class="green-label">明るい色のボタン（緑）</span>：変更を<b>保存して終了</b><br>
+                ・<span class="red-label">暗い色のボタン（赤）</span>：変更を<b>すべて破棄</b>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-circle btn-red-bright" onclick="alert('【警告】ファイルをすべて破棄しました。
+
+あなたは「明るいボタン」を選びましたが、これはC型（一般色覚）の方には「赤色（破棄）」に見えるボタンです。')">
+                    ボタン 1
+                </button>
+                <button class="btn-circle btn-green-dark" onclick="alert('【完了】変更を保存しました。
+
+あなたは「暗いボタン」を選びましたが、これはC型（一般色覚）の方には「緑色（保存）」に見えるボタンです。')">
+                    ボタン 2
+                </button>
+            </div>
+            
+            <p style="font-size: 0.85rem; color: #666; margin-top: 25px;">
+                ※間違えるとデータは復元できません。
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>解説：このUIは、色覚特性によって「色の見え方」よりも「明度（明るさ）の差」が<br>強調される現象を悪用し、特定のユーザーを誤った操作へ誘導します。</p>
+        </div>
+    </div>
+
+    <!-- 色覚シミュレーション用SVG -->
+    <svg style="display:none">
+        <defs>
+            <filter id="protanopia">
+                <feColorMatrix type="matrix" values="0.567, 0.433, 0, 0, 0, 0.558, 0.442, 0, 0, 0, 0, 0.242, 0.758, 0, 0, 0, 0, 0, 1, 0" />
+            </filter>
+            <filter id="deuteranopia">
+                <feColorMatrix type="matrix" values="0.625, 0.375, 0, 0, 0, 0.7, 0.3, 0, 0, 0, 0, 0.3, 0.7, 0, 0, 0, 0, 0, 1, 0" />
+            </filter>
+        </defs>
+    </svg>
+
+    <script>
+        function setSim(filter, btnId) {
+            document.body.style.setProperty('--sim', filter);
+            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(btnId).classList.add('active');
+        }
+    </script>
+</body>
+</html>

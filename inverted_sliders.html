@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="直感と完全に逆方向に動く水平・垂直スライダー。使いにくさを極めた爽快な（？）イライラ体験を提供するBad UIデモ。">
+    <title>直感逆転スライダーチャレンジ - BadUI Collection</title>
+    <!-- Google Fonts: Outfit & Noto Sans JP -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --neon-blue: #38bdf8;
+            --neon-pink: #f43f5e;
+            --neon-green: #10b981;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --slider-track-bg: rgba(15, 23, 42, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 2rem 1rem;
+        }
+
+        /* 背景の装飾アニメーション */
+        .bg-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0,0,0,0) 70%);
+            z-index: -1;
+            filter: blur(40px);
+            pointer-events: none;
+        }
+        .glow-1 { top: 10%; left: 10%; animation: float 12s infinite alternate; }
+        .glow-2 { bottom: 10%; right: 10%; animation: float 8s infinite alternate-reverse; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 30px) scale(1.2); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            z-index: 10;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--neon-blue);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            gap: 0.5rem;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+            transform: translateX(-3px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #38bdf8, #c084fc, #f43f5e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 750px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 10;
+            position: relative;
+        }
+
+        /* チャレンジ目標エリア */
+        .target-box {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .target-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--neon-blue);
+        }
+
+        .target-values {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 0.75rem;
+        }
+
+        .target-val {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .target-val span {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: block;
+            margin-top: 0.25rem;
+        }
+
+        .target-val.h-val span { color: var(--neon-blue); text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+        .target-val.v-val span { color: var(--neon-pink); text-shadow: 0 0 10px rgba(244, 63, 94, 0.3); }
+
+        /* スライダーコンテナ */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 120px;
+            gap: 2.5rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        @media (max-width: 640px) {
+            .workspace {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .vertical-slider-container {
+                justify-self: center;
+            }
+        }
+
+        /* 共通スライダーラベル */
+        .slider-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .current-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .current-value.h-curr { color: var(--neon-blue); }
+        .current-value.v-curr { color: var(--neon-pink); }
+
+        /* 水平スライダー */
+        .horizontal-slider-container {
+            width: 100%;
+        }
+
+        .track-h-wrapper {
+            position: relative;
+            height: 48px;
+            background: var(--slider-track-bg);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            cursor: pointer;
+            touch-action: none;
+        }
+
+        .track-h-fill {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+
+        /* 左側（値大）にむかって色がつくように、逆向きのインジケータ */
+        .track-h-progress {
+            position: absolute;
+            right: 16px;
+            height: 8px;
+            background: linear-gradient(90deg, #c084fc, var(--neon-blue));
+            border-radius: 4px;
+            width: 50%; /* JSで動的に変更 */
+        }
+
+        .thumb-h {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s, box-shadow 0.2s;
+            touch-action: none;
+            z-index: 5;
+            left: calc(50% - 16px); /* JSで動的に配置 */
+            user-select: none;
+        }
+
+        .thumb-h::after {
+            content: '';
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--neon-blue);
+        }
+
+        .thumb-h:active {
+            cursor: grabbing;
+            transform: scale(1.15);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.9);
+        }
+
+        /* 垂直スライダー */
+        .vertical-slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 250px;
+            width: 100%;
+        }
+
+        .track-v-wrapper {
+            position: relative;
+            width: 48px;
+            height: 200px;
+            background: var(--slider-track-bg);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            touch-action: none;
+            margin-top: auto;
+        }
+
+        .track-v-fill {
+            position: absolute;
+            top: 16px;
+            bottom: 16px;
+            width: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+
+        /* 下（値大）にむかって色がつくように、下向きのインジケータ */
+        .track-v-progress {
+            position: absolute;
+            top: 16px;
+            width: 8px;
+            background: linear-gradient(180deg, #c084fc, var(--neon-pink));
+            border-radius: 4px;
+            height: 50%; /* JSで動的に変更 */
+        }
+
+        .thumb-v {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s, box-shadow 0.2s;
+            touch-action: none;
+            z-index: 5;
+            top: calc(50% - 16px); /* JSで動的に配置 */
+            user-select: none;
+        }
+
+        .thumb-v::after {
+            content: '';
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--neon-pink);
+        }
+
+        .thumb-v:active {
+            cursor: grabbing;
+            transform: scale(1.15);
+            box-shadow: 0 0 25px rgba(244, 63, 94, 0.9);
+        }
+
+        /* イライラ物理トグルのセクション */
+        .controls-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .toggle-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toggle-title {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .toggle-desc {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.15rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-switch {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .slider-switch:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-switch {
+            background-color: var(--neon-blue);
+        }
+
+        input:checked + .slider-switch:before {
+            transform: translateX(20px);
+        }
+
+        /* 決定・送信ボタン */
+        .action-area {
+            text-align: center;
+        }
+
+        .btn-submit {
+            background: linear-gradient(90deg, var(--neon-blue), #818cf8, var(--neon-pink));
+            background-size: 200% auto;
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 1rem 2.5rem;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background-position: right center;
+            box-shadow: 0 12px 25px rgba(99, 102, 241, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+        /* ヘルプガイド */
+        .guide-box {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(244, 63, 94, 0.05);
+            border: 1px solid rgba(244, 63, 94, 0.15);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: #fda4af;
+            line-height: 1.5;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        /* 成功アニメーションオーバーレイ */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.9);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .success-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .success-card {
+            background: rgba(30, 41, 59, 0.95);
+            border: 2px solid var(--neon-green);
+            border-radius: 24px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(16, 185, 129, 0.4);
+            max-width: 450px;
+            transform: scale(0.9);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .success-overlay.show .success-card {
+            transform: scale(1);
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: var(--neon-green);
+            margin-bottom: 1.5rem;
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { transform: scale(1); text-shadow: 0 0 0 rgba(16, 185, 129, 0); }
+            50% { transform: scale(1.05); text-shadow: 0 0 20px rgba(16, 185, 129, 0.6); }
+            100% { transform: scale(1); text-shadow: 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .btn-restart {
+            margin-top: 2rem;
+            background: var(--neon-green);
+            border: none;
+            color: #0f172a;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-restart:hover {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* つまみがターゲットに近いときの警告震え効果 */
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            20%, 60% { transform: translate(-2px, 2px); }
+            40%, 80% { transform: translate(2px, -2px); }
+        }
+        .shaking {
+            animation: shake 0.15s infinite;
+        }
+
+        /* ツールチップ効果 */
+        .tooltip {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            transform: translate(-50%, -100%);
+            top: -10px;
+            white-space: nowrap;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .thumb-h:hover .tooltip, .thumb-v:hover .tooltip {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow glow-1" id="glow-1"></div>
+    <div class="bg-glow glow-2" id="glow-2"></div>
+
+    <header>
+        <a href="index.html" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            BadUI Collection へ戻る
+        </a>
+        <h1>直感逆転スライダー</h1>
+        <p class="subtitle">
+            あなたの操作の直感を裏切る、最悪の操作感スライダー。ターゲット値と同じ値になるようにスライダーを調整して送信してください。
+        </p>
+    </header>
+
+    <main class="main-card">
+        <!-- 目標設定エリア -->
+        <section class="target-box" aria-labelledby="target-heading">
+            <h2 id="target-heading" style="display:none">目標設定値</h2>
+            <div class="target-values">
+                <div class="target-val h-val">
+                    水平目標値 (X)
+                    <span id="target-h-display">77</span>
+                </div>
+                <div class="target-val v-val">
+                    垂直目標値 (Y)
+                    <span id="target-v-display">23</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ワークスペース (スライダー配置) -->
+        <section class="workspace" aria-label="スライダーワークスペース">
+            <!-- 水平スライダー -->
+            <div class="horizontal-slider-container">
+                <div class="slider-label">
+                    <span>水平スライダー</span>
+                    <span class="current-value h-curr" id="current-h-display">50</span>
+                </div>
+                <div class="track-h-wrapper" id="track-h" role="presentation">
+                    <div class="track-h-fill"></div>
+                    <div class="track-h-progress" id="progress-h"></div>
+                    <div class="thumb-h" id="thumb-h" role="slider" aria-label="水平スライダー" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" tabindex="0">
+                        <div class="tooltip" id="tooltip-h">50</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 垂直スライダー -->
+            <div class="vertical-slider-container">
+                <div class="slider-label" style="margin-bottom: 0.5rem; width: 100%; justify-content: center;">
+                    <span class="current-value v-curr" id="current-v-display">50</span>
+                </div>
+                <div class="track-v-wrapper" id="track-v" role="presentation">
+                    <div class="track-v-fill"></div>
+                    <div class="track-v-progress" id="progress-v"></div>
+                    <div class="thumb-v" id="thumb-v" role="slider" aria-label="垂直スライダー" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" tabindex="0">
+                        <div class="tooltip" id="tooltip-v" style="transform: translate(35px, -50%); top: 50%; left: 10px;">50</div>
+                    </div>
+                </div>
+                <div class="slider-label" style="margin-top: 0.5rem; width: 100%; justify-content: center;">
+                    <span>垂直スライダー</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 追加イライラ設定 -->
+        <section class="controls-section" aria-label="イライラ設定">
+            <div class="toggle-container" onclick="toggleOption('slippery')">
+                <div class="toggle-label">
+                    <span class="toggle-title">イライラ物理エンジン（Slippery Mode）</span>
+                    <span class="toggle-desc">つまみを離した後に摩擦がなく滑るようになり、合わせるのがほぼ不可能になります。</span>
+                </div>
+                <label class="switch" aria-label="Slippery Modeトグル">
+                    <input type="checkbox" id="toggle-slippery">
+                    <span class="slider-switch"></span>
+                </label>
+            </div>
+            <div class="toggle-container" onclick="toggleOption('jitter')">
+                <div class="toggle-label">
+                    <span class="toggle-title">数値のゆらぎ（Jitter Mode）</span>
+                    <span class="toggle-desc">目標値付近に到達した瞬間、スライダーが緊張で小さく揺れ動きます。</span>
+                </div>
+                <label class="switch" aria-label="Jitter Modeトグル">
+                    <input type="checkbox" id="toggle-jitter" checked>
+                    <span class="slider-switch"></span>
+                </label>
+            </div>
+        </section>
+
+        <!-- 送信エリア -->
+        <div class="action-area">
+            <button class="btn-submit" id="btn-submit" onclick="checkSubmission()">設定値を送信する</button>
+            <div class="guide-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span><strong>【操作警告】</strong><br>
+                水平スライダー：<strong>左</strong>に動かすと値が<strong>増え</strong>、<strong>右</strong>に動かすと値が<strong>減り</strong>ます。<br>
+                垂直スライダー：<strong>上</strong>に動かすと値が<strong>減り</strong>、<strong>下</strong>に動かすと値が<strong>増え</strong>ます。
+                </span>
+            </div>
+        </div>
+    </main>
+
+    <!-- 成功モーダル -->
+    <div class="success-overlay" id="success-overlay" aria-hidden="true" role="dialog">
+        <div class="success-card">
+            <div class="success-icon">🎉</div>
+            <h2>クリア！</h2>
+            <p style="margin-top: 1rem; color: var(--text-secondary); line-height: 1.6;">
+                素晴らしい精密なドラッグスキルです！この使いにくいスライダーを見事に目標値へと合わせました。
+            </p>
+            <button class="btn-restart" onclick="resetChallenge()">もう一度挑戦する</button>
+        </div>
+    </div>
+
+    <script>
+        // 状態変数
+        let targetH = 0;
+        let targetV = 0;
+        let valH = 50; // 水平現在の値 (0-100)
+        let valV = 50; // 垂直現在の値 (0-100)
+        
+        // オプションフラグ
+        let slipperyMode = false;
+        let jitterMode = true;
+
+        // 物理挙動用の速度
+        let velH = 0;
+        let velV = 0;
+        let isDraggingH = false;
+        let isDraggingV = false;
+
+        // DOM参照
+        const thumbH = document.getElementById('thumb-h');
+        const trackH = document.getElementById('track-h');
+        const progressH = document.getElementById('progress-h');
+        const tooltipH = document.getElementById('tooltip-h');
+        const currentHDisplay = document.getElementById('current-h-display');
+        const targetHDisplay = document.getElementById('target-h-display');
+
+        const thumbV = document.getElementById('thumb-v');
+        const trackV = document.getElementById('track-v');
+        const progressV = document.getElementById('progress-v');
+        const tooltipV = document.getElementById('tooltip-v');
+        const currentVDisplay = document.getElementById('current-v-display');
+        const targetVDisplay = document.getElementById('target-v-display');
+
+        const toggleSlippery = document.getElementById('toggle-slippery');
+        const toggleJitter = document.getElementById('toggle-jitter');
+
+        // チャレンジ初期化
+        function initChallenge() {
+            // 目標値をランダムに設定 (合わせにくいように端や中途半端な数を狙う)
+            targetH = Math.floor(Math.random() * 85) + 8; // 8〜92
+            targetV = Math.floor(Math.random() * 85) + 8;
+
+            targetHDisplay.textContent = targetH;
+            targetVDisplay.textContent = targetV;
+
+            // 初期位置を設定
+            valH = 50;
+            valV = 50;
+            velH = 0;
+            velV = 0;
+
+            updateSliderHVisuals();
+            updateSliderVVisuals();
+        }
+
+        // オプション変更
+        function toggleOption(type) {
+            if (type === 'slippery') {
+                toggleSlippery.checked = !toggleSlippery.checked;
+                slipperyMode = toggleSlippery.checked;
+            } else if (type === 'jitter') {
+                toggleJitter.checked = !toggleJitter.checked;
+                jitterMode = toggleJitter.checked;
+            }
+        }
+
+        // チェックボックスから直接設定が変更された時用
+        toggleSlippery.addEventListener('change', () => { slipperyMode = toggleSlippery.checked; });
+        toggleJitter.addEventListener('change', () => { jitterMode = toggleJitter.checked; });
+
+        // 水平スライダー位置更新
+        // x: 0%〜100% の位置
+        // 直感逆転：左（0%）で最大（100）、右（100%）で最小（0）
+        // つまり valH = 100 - x
+        function setSliderHByPercent(percent) {
+            percent = Math.max(0, Math.min(100, percent));
+            valH = Math.round(100 - percent);
+            updateSliderHVisuals();
+        }
+
+        function updateSliderHVisuals() {
+            // valH = 100 - percent => percent = 100 - valH
+            const percent = 100 - valH;
+            thumbH.style.left = `calc(${percent}% - 16px)`;
+            
+            // プログレスバーも逆向きに表示（右端から左へ伸びる）
+            progressH.style.left = 'auto';
+            progressH.style.right = '16px';
+            progressH.style.width = `${percent}%`;
+
+            currentHDisplay.textContent = valH;
+            tooltipH.textContent = valH;
+            thumbH.setAttribute('aria-valuenow', valH);
+
+            // Jitter Modeかつターゲット付近の時、スライダー全体を小さく揺らす
+            if (jitterMode && Math.abs(valH - targetH) <= 3) {
+                thumbH.classList.add('shaking');
+            } else {
+                thumbH.classList.remove('shaking');
+            }
+        }
+
+        // 垂直スライダー位置更新
+        // y: 0%〜100% の位置
+        // 直感逆転：上（0%）で最小（0）、下（100%）で最大（100）
+        // 通常は上（0%）が最大（100）で下（100%）が最小（0）なので逆
+        // つまり valV = y
+        function setSliderVByPercent(percent) {
+            percent = Math.max(0, Math.min(100, percent));
+            valV = Math.round(percent);
+            updateSliderVVisuals();
+        }
+
+        function updateSliderVVisuals() {
+            const percent = valV;
+            thumbV.style.top = `calc(${percent}% - 16px)`;
+
+            // プログレスバーも上端から下に向かって伸びる
+            progressV.style.top = '16px';
+            progressV.style.bottom = 'auto';
+            progressV.style.height = `${percent}%`;
+
+            currentVDisplay.textContent = valV;
+            tooltipV.textContent = valV;
+            thumbV.setAttribute('aria-valuenow', valV);
+
+            // Jitter Mode
+            if (jitterMode && Math.abs(valV - targetV) <= 3) {
+                thumbV.classList.add('shaking');
+            } else {
+                thumbV.classList.remove('shaking');
+            }
+        }
+
+        // --- ドラッグ制御 (水平) ---
+        let startX = 0;
+        let startLeftPercent = 0;
+
+        thumbH.addEventListener('pointerdown', (e) => {
+            isDraggingH = true;
+            thumbH.setPointerCapture(e.pointerId);
+            startX = e.clientX;
+            const rect = trackH.getBoundingClientRect();
+            const usableWidth = rect.width - 32;
+            const currentLeft = (100 - valH) * usableWidth / 100;
+            startLeftPercent = (100 - valH);
+            e.stopPropagation();
+        });
+
+        thumbH.addEventListener('pointermove', (e) => {
+            if (!isDraggingH) return;
+            const rect = trackH.getBoundingClientRect();
+            const usableWidth = rect.width - 32;
+            const deltaX = e.clientX - startX;
+            const deltaPercent = (deltaX / usableWidth) * 100;
+            
+            let newPercent = startLeftPercent + deltaPercent;
+            
+            // Jitter Modeのときの微妙なカーソルブレ
+            if (jitterMode && Math.abs((100 - newPercent) - targetH) <= 5) {
+                newPercent += (Math.random() - 0.5) * 1.5;
+            }
+
+            setSliderHByPercent(newPercent);
+        });
+
+        thumbH.addEventListener('pointerup', (e) => {
+            if (!isDraggingH) return;
+            isDraggingH = false;
+            thumbH.releasePointerCapture(e.pointerId);
+            
+            // Slippery物理エンジン
+            if (slipperyMode) {
+                // ランダムな慣性で余韻を持たせて滑らせる
+                velH = (Math.random() - 0.5) * 6; 
+            }
+        });
+
+        // トラッククリックでの移動
+        trackH.addEventListener('pointerdown', (e) => {
+            if (e.target === thumbH) return;
+            const rect = trackH.getBoundingClientRect();
+            const clickX = e.clientX - rect.left - 16;
+            const usableWidth = rect.width - 32;
+            const percent = (clickX / usableWidth) * 100;
+            setSliderHByPercent(percent);
+
+            // ドラッグ開始
+            isDraggingH = true;
+            thumbH.setPointerCapture(e.pointerId);
+            startX = e.clientX;
+            startLeftPercent = percent;
+        });
+
+        // --- ドラッグ制御 (垂直) ---
+        let startY = 0;
+        let startTopPercent = 0;
+
+        thumbV.addEventListener('pointerdown', (e) => {
+            isDraggingV = true;
+            thumbV.setPointerCapture(e.pointerId);
+            startY = e.clientY;
+            const rect = trackV.getBoundingClientRect();
+            const usableHeight = rect.height - 32;
+            const currentTop = valV * usableHeight / 100;
+            startTopPercent = valV;
+            e.stopPropagation();
+        });
+
+        thumbV.addEventListener('pointermove', (e) => {
+            if (!isDraggingV) return;
+            const rect = trackV.getBoundingClientRect();
+            const usableHeight = rect.height - 32;
+            const deltaY = e.clientY - startY;
+            const deltaPercent = (deltaY / usableHeight) * 100;
+            
+            let newPercent = startTopPercent + deltaPercent;
+
+            // Jitter Mode
+            if (jitterMode && Math.abs(newPercent - targetV) <= 5) {
+                newPercent += (Math.random() - 0.5) * 1.5;
+            }
+
+            setSliderVByPercent(newPercent);
+        });
+
+        thumbV.addEventListener('pointerup', (e) => {
+            if (!isDraggingV) return;
+            isDraggingV = false;
+            thumbV.releasePointerCapture(e.pointerId);
+
+            // Slippery物理エンジン
+            if (slipperyMode) {
+                velV = (Math.random() - 0.5) * 6;
+            }
+        });
+
+        // トラッククリックでの移動
+        trackV.addEventListener('pointerdown', (e) => {
+            if (e.target === thumbV) return;
+            const rect = trackV.getBoundingClientRect();
+            const clickY = e.clientY - rect.top - 16;
+            const usableHeight = rect.height - 32;
+            const percent = (clickY / usableHeight) * 100;
+            setSliderVByPercent(percent);
+
+            // ドラッグ開始
+            isDraggingV = true;
+            thumbV.setPointerCapture(e.pointerId);
+            startY = e.clientY;
+            startTopPercent = percent;
+        });
+
+        // キーボード操作対応 (WAI-ARIA基準、ただし直感と逆)
+        // 通常：ArrowRight/ArrowUp で増加、ArrowLeft/ArrowDown で減少
+        // 逆転：ArrowRight/ArrowUp で減少、ArrowLeft/ArrowDown で増加
+        thumbH.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                valH = Math.max(0, valH - 1);
+                updateSliderHVisuals();
+                e.preventDefault();
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                valH = Math.min(100, valH + 1);
+                updateSliderHVisuals();
+                e.preventDefault();
+            }
+        });
+
+        thumbV.addEventListener('keydown', (e) => {
+            // 垂直スライダーは、上（キーボードArrowUp/ArrowRight）で減少し、下（ArrowDown/ArrowLeft）で増加
+            if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+                valV = Math.max(0, valV - 1);
+                updateSliderVVisuals();
+                e.preventDefault();
+            } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+                valV = Math.min(100, valV + 1);
+                updateSliderVVisuals();
+                e.preventDefault();
+            }
+        });
+
+        // --- 物理更新ループ (Slippery Mode 用) ---
+        function updatePhysics() {
+            if (slipperyMode) {
+                if (!isDraggingH && Math.abs(velH) > 0.05) {
+                    let percent = 100 - valH;
+                    percent += velH;
+                    if (percent <= 0 || percent >= 100) {
+                        velH = -velH * 0.5; // 壁跳ね返り
+                    }
+                    setSliderHByPercent(percent);
+                    velH *= 0.95; // 摩擦減衰
+                }
+                if (!isDraggingV && Math.abs(velV) > 0.05) {
+                    let percent = valV;
+                    percent += velV;
+                    if (percent <= 0 || percent >= 100) {
+                        velV = -velV * 0.5;
+                    }
+                    setSliderVByPercent(percent);
+                    velV *= 0.95;
+                }
+            }
+            requestAnimationFrame(updatePhysics);
+        }
+        requestAnimationFrame(updatePhysics);
+
+        // 送信判定
+        function checkSubmission() {
+            if (valH === targetH && valV === targetV) {
+                document.getElementById('success-overlay').classList.add('show');
+                document.getElementById('success-overlay').setAttribute('aria-hidden', 'false');
+            } else {
+                // 不一致の場合は、ターゲット値とどれだけズレているかをイライラさせるようなメッセージで警告
+                const diffH = Math.abs(valH - targetH);
+                const diffV = Math.abs(valV - targetV);
+                alert(`送信失敗！設定値が一致しません。\n\n・水平スライダーの誤差: ${diffH}\n・垂直スライダーの誤差: ${diffV}\n\nピッタリ同じ値に合わせてください。`);
+            }
+        }
+
+        // リセット
+        function resetChallenge() {
+            document.getElementById('success-overlay').classList.remove('show');
+            document.getElementById('success-overlay').setAttribute('aria-hidden', 'true');
+            initChallenge();
+        }
+
+        // 初期ロード
+        initChallenge();
+    </script>
+</body>
+</html>

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="1文字ごとに異なるWebフォントを適用し、サイズ・傾き・位置をランダムに揺らすことで、極限まで読みやすさを奪ったカオスフォントビューア。">
+    <title>カオス・フォント・リーダー - BadUI Collection</title>
+    
+    <!-- Google Fonts: 読みにくい＆特徴的なフォントたちと、ベース用のInter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Bungee&family=Butcherman&family=Caveat:wght@700&family=Cinzel+Decorative:wght@700&family=Creepster&family=Dela+Gothic+One&family=DotGothic16&family=Eater&family=Flavors&family=Lobster&family=Monoton&family=Pacifico&family=Permanent+Marker&family=Press+Start+2P&family=Rubik+Mono+One&family=Rye&family=Special+Elite&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(22, 28, 45, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-pink: #ec4899;
+            --accent-purple: #8b5cf6;
+            --accent-teal: #14b8a6;
+            --text-normal: #f1f5f9;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(236, 72, 153, 0.15) 0px, transparent 50%);
+            color: var(--text-normal);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 3rem 1.5rem;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--accent-teal);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1.2rem;
+            transition: all 0.3s ease;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            color: var(--text-normal);
+            transform: translateX(-3px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a78bfa, #ec4899, #f43f5e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2.2rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-normal);
+            border-left: 4px solid var(--accent-purple);
+            padding-left: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* カオス・テキスト・コンテナ */
+        .chaos-text-box {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            line-height: 2.4; /* フォントサイズがまちまちなため高めの行間が必要 */
+            font-size: 1.3rem;
+            min-height: 200px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+            user-select: text;
+        }
+
+        /* 1文字ごとのスタイル（JSから動的付与されるクラス/スタイルを受け止める） */
+        .chaos-char {
+            display: inline-block;
+            transition: all 0.2s ease;
+            transform-origin: center;
+        }
+        
+        /* ホバーでさらにウザく動く */
+        .chaos-char:hover {
+            transform: scale(1.4) rotate(15deg) translateY(-5px) !important;
+            color: var(--accent-pink) !important;
+            text-shadow: 0 0 8px rgba(236, 72, 153, 0.6);
+            cursor: pointer;
+        }
+
+        /* 切り替えツールバー */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            border: none;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+        }
+
+        /* 逃げる「読みやすくする」ボタン */
+        .btn-easy-wrap {
+            position: relative;
+            display: inline-block;
+        }
+        .btn-easy {
+            background: #334155;
+            color: #94a3b8;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn-easy:hover {
+            background: #475569;
+            color: #f1f5f9;
+        }
+
+        /* テキスト入力カード */
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        textarea {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text-normal);
+            padding: 1rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 100px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        textarea:focus {
+            border-color: var(--accent-teal);
+        }
+
+        .char-legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.02);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .legend-color {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        /* 警告モーダル（読みやすくしようとしたときに出る） */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-card {
+            background: #1e293b;
+            border: 2px solid #ef4444;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.show .modal-card {
+            transform: scale(1);
+        }
+        .modal-title {
+            color: #ef4444;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .modal-desc {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        .modal-btns {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .btn-modal-no {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-modal-yes {
+            background: #475569;
+            color: #cbd5e1;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            BadUI Collection へ戻る
+        </a>
+        <h1>カオス・フォント・リーダー</h1>
+        <p class="subtitle">
+            Google Fonts の個性的すぎるWebフォント達を悪用した、Ransom Note（脅迫状）風リーダー。1文字ごとにフォントやサイズ、傾き、行ズレがデタラメに変動し、目が壊れそうな読書体験を提供します。
+        </p>
+    </header>
+
+    <main class="container">
+        
+        <!-- カオステキスト表示カード -->
+        <article class="card">
+            <h2 class="card-title">
+                <span>📖 読みにくい文章（Readability Essay）</span>
+            </h2>
+            
+            <div class="chaos-text-box" id="chaos-output" aria-live="polite"></div>
+
+            <div class="toolbar">
+                <button class="btn-action" onclick="shuffleStyles()">スタイルをシャッフルする</button>
+                <div class="btn-easy-wrap" id="easy-btn-wrapper">
+                    <button class="btn-easy" id="easy-btn" onmouseover="tryToEscape(this)" onclick="attemptNormalize()">普通のフォントで読む</button>
+                </div>
+            </div>
+        </article>
+
+        <!-- 入力ジェネレーターカード -->
+        <section class="card">
+            <h2 class="card-title">✍️ 脅迫状テキストジェネレーター</h2>
+            <div class="input-area">
+                <label for="custom-input" style="font-size: 0.85rem; color: var(--text-muted);">変換したい英文または文章を入力してください：</label>
+                <textarea id="custom-input" placeholder="ここに英語の文章を入力すると、上のリーダーにリアルタイムでカオスに反映されます..."></textarea>
+            </div>
+
+            <!-- 使用されているフォントの凡例 -->
+            <div class="char-legend" aria-label="フォント一覧">
+                <div class="legend-item"><span class="legend-color" style="background:#f43f5e"></span>Creepster (ホラー)</div>
+                <div class="legend-item"><span class="legend-color" style="background:#3b82f6"></span>Press Start 2P (8bit)</div>
+                <div class="legend-item"><span class="legend-color" style="background:#10b981"></span>Monoton (ネオン)</div>
+                <div class="legend-item"><span class="legend-color" style="background:#eab308"></span>Eater (ドロドロ)</div>
+                <div class="legend-item"><span class="legend-color" style="background:#a855f7"></span>Pacifico (手書き)</div>
+                <div class="legend-item"><span class="legend-color" style="background:#ec4899"></span>Special Elite (打鍵)</div>
+                <div class="legend-item"><span class="legend-color" style="background:#14b8a6"></span>Butcherman (ギザ)</div>
+                <div class="legend-item"><span class="legend-color" style="background:#f97316"></span>Rye (西部劇)</div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- イライラ確認モーダル -->
+    <div class="modal-overlay" id="modal-overlay" aria-hidden="true" role="dialog">
+        <div class="modal-card">
+            <h3 class="modal-title">警告</h3>
+            <p class="modal-desc">
+                本当にこの美しい表現されたカオスフォントを捨てて、つまらない「普通のフォント」で読みたいですか？<br>
+                読みやすさに甘えるのは良くない習慣です。
+            </p>
+            <div class="modal-btns">
+                <button class="btn-modal-no" onclick="cancelNormalization()">いいえ、このまま頑張る</button>
+                <button class="btn-modal-yes" onclick="confirmNormalization()">はい、屈します</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // デタラメに割り当てるフォントファミリーのリスト
+        const fonts = [
+            'Creepster',
+            'Press Start 2P',
+            'Monoton',
+            'Eater',
+            'Lobster',
+            'Pacifico',
+            'Special Elite',
+            'Bungee',
+            'Rubik Mono One',
+            'Rye',
+            'Cinzel Decorative',
+            'Permanent Marker',
+            'Caveat',
+            'Butcherman',
+            'Flavors',
+            'DotGothic16',
+            'Dela Gothic One'
+        ];
+
+        // カラーバリエーション（脅迫状らしさ、あるいは単にカオスさを引き出す）
+        const colors = [
+            '#f43f5e', // rose-500
+            '#ec4899', // pink-500
+            '#d946ef', // fuchsia-500
+            '#a855f7', // purple-500
+            '#8b5cf6', // violet-500
+            '#6366f1', // indigo-500
+            '#3b82f6', // blue-500
+            '#0ea5e9', // sky-500
+            '#06b6d4', // cyan-500
+            '#14b8a6', // teal-500
+            '#10b981', // emerald-500
+            '#22c55e', // green-500
+            '#eab308', // yellow-500
+            '#f97316', // orange-500
+            '#ef4444', // red-500
+            '#ffffff', // white
+            '#cbd5e1'  // slate-300
+        ];
+
+        // 初学者でも読める平易なアクセシビリティ（読みやすさ）に関する皮肉な英文
+        const defaultText = `Welcome to our special reading room. Today, we will discuss readability.
+Good web design must be easy to read for everyone. If you choose a clean font, your users will be happy. Colors, sizes, and line-heights are also very important for user experience.
+Simple and clean text helps people understand your message quickly and without stress.
+Thank you for trying to read this incredibly beautiful, neat, and highly readable page. You are doing a wonderful job.`;
+
+        const outputArea = document.getElementById('chaos-output');
+        const customInput = document.getElementById('custom-input');
+        const modal = document.getElementById('modal-overlay');
+        const easyBtn = document.getElementById('easy-btn');
+
+        let isNormalized = false;
+        let escapeCount = 0;
+
+        // 入力監視
+        customInput.addEventListener('input', (e) => {
+            renderText(e.target.value || defaultText);
+        });
+
+        // テキストを1文字ずつのspanに分解してレンダリング
+        function renderText(text) {
+            outputArea.innerHTML = '';
+            
+            // 改行を考慮して1文字ずつ分割
+            const characters = Array.from(text);
+
+            characters.forEach(char => {
+                if (char === '\n') {
+                    outputArea.appendChild(document.createElement('br'));
+                    return;
+                }
+
+                const span = document.createElement('span');
+                span.textContent = char;
+                span.classList.add('chaos-char');
+
+                if (!isNormalized) {
+                    applyChaosStyle(span);
+                } else {
+                    applyNormalStyle(span);
+                }
+
+                outputArea.appendChild(span);
+            });
+        }
+
+        // 1文字に極悪なスタイルを適用する
+        function applyChaosStyle(element) {
+            // ランダムにフォントを選択
+            const font = fonts[Math.floor(Math.random() * fonts.length)];
+            // ランダムに色を選択
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            // ランダムなサイズ倍率 (0.75倍〜1.4倍)
+            const size = (Math.random() * 0.65 + 0.75).toFixed(2);
+            // ランダムな回転角 (-10度〜+10度)
+            const rotate = Math.floor(Math.random() * 20) - 10;
+            // ランダムな上下のズレ (-5px 〜 +5px)
+            const yOffset = Math.floor(Math.random() * 10) - 5;
+            // ランダムな太さ
+            const weight = Math.random() > 0.5 ? 'bold' : 'normal';
+
+            element.style.fontFamily = `"${font}", sans-serif`;
+            element.style.color = color;
+            element.style.fontSize = `${size}em`;
+            element.style.fontWeight = weight;
+            element.style.transform = `rotate(${rotate}deg) translateY(${yOffset}px)`;
+            
+            // BungeeやDela Gothic Oneなどの極太フォントと、手書きフォントで文字の間隔を少し狂わせる
+            const letterSpacing = (Math.random() * 4 - 1).toFixed(1);
+            element.style.letterSpacing = `${letterSpacing}px`;
+        }
+
+        // 普通のスタイルを適用する
+        function applyNormalStyle(element) {
+            element.style.fontFamily = "'Inter', sans-serif";
+            element.style.color = 'var(--text-normal)';
+            element.style.fontSize = '1em';
+            element.style.fontWeight = 'normal';
+            element.style.transform = 'none';
+            element.style.letterSpacing = 'normal';
+        }
+
+        // スタイルのシャッフル
+        function shuffleStyles() {
+            if (isNormalized) {
+                alert('現在「普通のフォント」モードになっています。シャッフルするには戻してください。');
+                return;
+            }
+            const spans = outputArea.querySelectorAll('.chaos-char');
+            spans.forEach(span => applyChaosStyle(span));
+        }
+
+        // 「読みやすくする」ボタンがホバーされたときに逃げるギミック（最初の3回だけ逃げる）
+        function tryToEscape(btn) {
+            if (escapeCount >= 3 || isNormalized) return;
+
+            const wrapper = document.getElementById('easy-btn-wrapper');
+            
+            // ランダムな方向に移動させる
+            const x = (Math.random() - 0.5) * 160;
+            const y = (Math.random() - 0.5) * 70;
+
+            btn.style.position = 'relative';
+            btn.style.transform = `translate(${x}px, ${y}px)`;
+            btn.style.zIndex = '999';
+
+            escapeCount++;
+        }
+
+        // 「普通のフォントで読む」の実行を試みる
+        function attemptNormalize() {
+            // 逃げる位置を戻す
+            easyBtn.style.transform = 'none';
+            escapeCount = 0;
+
+            if (isNormalized) {
+                // 通常からカオスに戻すのは確認なし
+                isNormalized = false;
+                easyBtn.textContent = '普通のフォントで読む';
+                easyBtn.style.background = '#334155';
+                easyBtn.style.color = '#94a3b8';
+                renderText(customInput.value || defaultText);
+            } else {
+                // カオスから通常へは、警告ポップアップを表示
+                modal.classList.add('show');
+                modal.setAttribute('aria-hidden', 'false');
+            }
+        }
+
+        // 警告モーダルでのキャンセル
+        function cancelNormalization() {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        // 警告モーダルでの承諾
+        function confirmNormalization() {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+            isNormalized = true;
+            easyBtn.textContent = 'カオスフォントに戻す';
+            easyBtn.style.background = 'var(--accent-teal)';
+            easyBtn.style.color = '#0b0f19';
+            renderText(customInput.value || defaultText);
+        }
+
+        // 初期ロード時にデフォルトテキストを表示
+        renderText(defaultText);
+    </script>
+</body>
+</html>
